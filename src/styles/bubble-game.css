@@ -1,0 +1,312 @@
+/* ===== 心事泡泡 · 全屏小游戏 ===== */
+body.bubble-overlay-open {
+  overflow: hidden;
+}
+
+.bubble-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.5s var(--ease-out),
+    visibility 0.5s;
+}
+
+.bubble-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.bubble-overlay-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 75% 55% at 50% 35%, rgba(232, 180, 188, 0.2) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 80% 75%, rgba(201, 184, 232, 0.14) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 15% 70%, rgba(244, 212, 168, 0.1) 0%, transparent 45%),
+    linear-gradient(165deg, #141018 0%, #1e1828 45%, #12101a 100%);
+}
+
+.bubble-overlay-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 3;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: rgba(26, 21, 32, 0.7);
+  backdrop-filter: blur(8px);
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    color 0.3s,
+    border-color 0.3s,
+    transform 0.25s;
+}
+
+.bubble-overlay-close:hover {
+  color: var(--text-primary);
+  border-color: rgba(232, 180, 188, 0.45);
+  transform: scale(1.05);
+}
+
+.bubble-screen {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  animation: fade-in 0.7s var(--ease-out) both;
+}
+
+.bubble-screen--welcome {
+  max-width: 480px;
+}
+
+.bubble-welcome-inner {
+  text-align: center;
+  padding: 2rem 1.5rem;
+}
+
+.bubble-welcome-eyebrow {
+  font-size: 0.76rem;
+  letter-spacing: 0.14em;
+  color: var(--accent-rose);
+  margin-bottom: 1rem;
+}
+
+.bubble-welcome-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 5vw, 2rem);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  margin-bottom: 1.25rem;
+  background: linear-gradient(135deg, var(--text-primary), var(--accent-rose));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bubble-welcome-text {
+  font-size: clamp(0.95rem, 3vw, 1.05rem);
+  line-height: 2;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.bubble-welcome-hint {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  color: rgba(232, 180, 188, 0.7);
+  margin-bottom: 2rem;
+}
+
+.bubble-start-btn {
+  padding: 0.9rem 2.25rem;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  background: linear-gradient(135deg, var(--accent-rose), #d49aa4);
+  box-shadow: 0 10px 36px rgba(232, 180, 188, 0.28);
+}
+
+.bubble-start-btn:hover {
+  box-shadow: 0 14px 40px rgba(232, 180, 188, 0.38);
+}
+
+/* ===== 游戏区域 ===== */
+.bubble-screen--play {
+  position: absolute;
+  inset: 0;
+  max-width: none;
+}
+
+.bubble-play-hint {
+  position: absolute;
+  top: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  color: rgba(245, 240, 235, 0.55);
+  pointer-events: none;
+  transition: opacity 1.2s var(--ease-out);
+}
+
+.bubble-play-hint.is-fading {
+  opacity: 0.75;
+}
+
+.bubble-arena {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  cursor: default;
+}
+
+.bubble-play-count {
+  position: absolute;
+  bottom: 1.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  color: rgba(232, 180, 188, 0.65);
+  pointer-events: none;
+}
+
+/* ===== 泡泡 ===== */
+.bubble-item {
+  position: absolute;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.45) 0%, transparent 45%),
+    radial-gradient(circle at 70% 75%, rgba(255, 255, 255, 0.08) 0%, transparent 40%),
+    var(--bubble-color, rgba(232, 180, 188, 0.35));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 -4px 12px rgba(255, 255, 255, 0.06),
+    0 4px 20px rgba(232, 180, 188, 0.12);
+  animation: bubble-float var(--bubble-duration, 12s) linear forwards;
+  transition: transform 0.15s var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bubble-item:hover {
+  transform: scale(1.06);
+  box-shadow:
+    inset 0 -4px 12px rgba(255, 255, 255, 0.1),
+    0 6px 28px rgba(232, 180, 188, 0.22);
+}
+
+.bubble-item.is-popping {
+  animation: bubble-pop 0.38s var(--ease-out) forwards;
+  pointer-events: none;
+}
+
+@keyframes bubble-float {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  6% {
+    opacity: 0.85;
+  }
+  85% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(calc(-100vh - 80px)) translateX(var(--bubble-drift, 0px));
+    opacity: 0;
+  }
+}
+
+@keyframes bubble-pop {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  40% {
+    transform: scale(1.35);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+.bubble-pop-halo {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: radial-gradient(circle, rgba(232, 180, 188, 0.35) 0%, transparent 70%);
+  animation: bubble-halo 0.55s var(--ease-out) forwards;
+  transform-origin: center center;
+}
+
+@keyframes bubble-halo {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.4);
+    opacity: 0;
+  }
+}
+
+/* ===== 结束画面 ===== */
+.bubble-screen--end {
+  max-width: 420px;
+}
+
+.bubble-end-inner {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  animation: fade-in 1.2s var(--ease-out) both;
+}
+
+.bubble-end-glow {
+  font-size: 2.5rem;
+  color: var(--accent-rose);
+  opacity: 0.6;
+  margin-bottom: 1.5rem;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+.bubble-end-text {
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 4vw, 1.45rem);
+  letter-spacing: 0.08em;
+  line-height: 1.85;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  max-width: 18em;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.bubble-end-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+}
+
+.bubble-end-num {
+  color: var(--accent-rose);
+  font-weight: 500;
+}
+
+.bubble-restart-btn {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  margin: 0 auto 0.75rem;
+  padding: 0.85rem 1.5rem;
+  background: linear-gradient(135deg, var(--accent-rose), #d49aa4);
+  box-shadow: 0 8px 28px rgba(232, 180, 188, 0.22);
+}
+
+.bubble-finish-btn {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  margin: 0 auto;
+}
