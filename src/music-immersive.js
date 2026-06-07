@@ -87,12 +87,12 @@ let activeSceneId = null;
 let fadeTimer = null;
 
 function renderScenePhoto(scene) {
-  const [src, fallback] = IMAGE_CANDIDATES(scene.image);
+  const candidates = IMAGE_CANDIDATES(scene.image);
   return `
     <img
       class="music-scene-photo"
-      src="${src}"
-      data-fallback="${fallback}"
+      src="${candidates[0]}"
+      data-candidates="${candidates.join("|")}"
       alt="${scene.title}"
       loading="lazy"
     />
@@ -112,11 +112,11 @@ function renderImmersiveContent(scene) {
   `;
 }
 
-function renderInsectsFx(src, fallback) {
+function renderInsectsFx(src, candidates) {
   return `
     <div class="music-immersive-scene-bg" aria-hidden="true">
       <div class="music-immersive-scene-img-wrap music-immersive-fx--sway">
-        <img class="music-immersive-scene-img music-immersive-fx--ken-burns" src="${src}" data-fallback="${fallback}" alt="" />
+        <img class="music-immersive-scene-img music-immersive-fx--ken-burns" src="${src}" data-candidates="${candidates}" alt="" />
       </div>
       <div class="music-immersive-fx-wind"></div>
       <div class="music-immersive-fx-sunbeams">
@@ -128,11 +128,11 @@ function renderInsectsFx(src, fallback) {
   `;
 }
 
-function renderStormFx(src, fallback) {
+function renderStormFx(src, candidates) {
   return `
     <div class="music-immersive-scene-bg" aria-hidden="true">
       <div class="music-immersive-scene-img-wrap music-immersive-fx--storm-drift">
-        <img class="music-immersive-scene-img music-immersive-fx--storm-zoom" src="${src}" data-fallback="${fallback}" alt="" />
+        <img class="music-immersive-scene-img music-immersive-fx--storm-zoom" src="${src}" data-candidates="${candidates}" alt="" />
       </div>
       <div class="music-immersive-fx-rain"></div>
       <div class="music-immersive-fx-rain music-immersive-fx-rain--heavy"></div>
@@ -144,11 +144,11 @@ function renderStormFx(src, fallback) {
   `;
 }
 
-function renderForestFx(src, fallback) {
+function renderForestFx(src, candidates) {
   return `
     <div class="music-immersive-scene-bg" aria-hidden="true">
       <div class="music-immersive-scene-img-wrap music-immersive-fx--forest-drift">
-        <img class="music-immersive-scene-img music-immersive-fx--forest-flow" src="${src}" data-fallback="${fallback}" alt="" />
+        <img class="music-immersive-scene-img music-immersive-fx--forest-flow" src="${src}" data-candidates="${candidates}" alt="" />
       </div>
       <div class="music-immersive-fx-mist"></div>
       <div class="music-immersive-fx-stream-shimmer"></div>
@@ -158,11 +158,11 @@ function renderForestFx(src, fallback) {
   `;
 }
 
-function renderBonfireFx(src, fallback) {
+function renderBonfireFx(src, candidates) {
   return `
     <div class="music-immersive-scene-bg" aria-hidden="true">
       <div class="music-immersive-scene-img-wrap music-immersive-fx--bonfire-drift">
-        <img class="music-immersive-scene-img music-immersive-fx--bonfire-glow" src="${src}" data-fallback="${fallback}" alt="" />
+        <img class="music-immersive-scene-img music-immersive-fx--bonfire-glow" src="${src}" data-candidates="${candidates}" alt="" />
       </div>
       <div class="music-immersive-fx-fire-glow"></div>
       <div class="music-immersive-fx-flame-flicker"></div>
@@ -183,7 +183,7 @@ const IMMERSIVE_FX = {
 };
 
 function renderImmersiveScene(scene) {
-  const [src, fallback] = IMAGE_CANDIDATES(scene.image);
+  const candidates = IMAGE_CANDIDATES(scene.image);
   const renderFx = IMMERSIVE_FX[scene.id];
   if (!renderFx) return "";
 
@@ -193,7 +193,7 @@ function renderImmersiveScene(scene) {
       data-immersive-id="${scene.id}"
       hidden
     >
-      ${renderFx(src, fallback)}
+      ${renderFx(candidates[0], candidates.join("|"))}
       ${renderImmersiveContent(scene)}
     </div>
   `;
@@ -201,16 +201,20 @@ function renderImmersiveScene(scene) {
 
 function bindScenePhotos() {
   overlay.querySelectorAll(".music-scene-photo, .music-immersive-scene-img").forEach((img) => {
-    img.addEventListener(
-      "error",
-      () => {
-        const fallback = img.dataset.fallback;
-        if (fallback && img.src !== new URL(fallback, window.location.href).href) {
-          img.src = fallback;
-        }
-      },
-      { once: true }
-    );
+    const candidates = (img.dataset.candidates || img.dataset.fallback || "")
+      .split("|")
+      .filter(Boolean);
+    if (!candidates.length) return;
+
+    let index = 0;
+    img.addEventListener("error", () => {
+      index += 1;
+      if (index >= candidates.length) return;
+      const next = candidates[index];
+      if (img.src !== new URL(next, window.location.href).href) {
+        img.src = next;
+      }
+    });
   });
 }
 
